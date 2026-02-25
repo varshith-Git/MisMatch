@@ -1,0 +1,42 @@
+# Fly.io configuration for MisMatch signaling server
+# Deploy: fly launch --config fly.toml (run from server/ directory)
+
+app = "mismatch-server"
+primary_region = "sin"   # Singapore — closest to India
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  # WebSocket connections can stay open a long time
+  [[services.tcp_checks]]
+    grace_period = "5s"
+    interval = "15s"
+    timeout = "2s"
+
+  [[services.http_checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "GET"
+    path = "/health"
+
+[resources]
+  # Free tier: shared-cpu-1x with 256MB RAM
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

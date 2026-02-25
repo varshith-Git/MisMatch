@@ -21,8 +21,8 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/mismatch-server ./mismatch-server
 
-# Railway injects $PORT — we bind to it
-ENV PORT=9443
-EXPOSE 9443
+# Railway injects $PORT — we bind to it. Fly.io uses 8080 by default.
+ENV PORT=8080
+EXPOSE 8080
 
 CMD ["./mismatch-server"]
