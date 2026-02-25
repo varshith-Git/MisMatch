@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { SignalingClient } from '@/lib/signaling';
 import { PeerConnection } from '@/lib/webrtc';
 import VideoGrid from '@/components/VideoGrid';
@@ -198,7 +199,7 @@ export default function ChatPage() {
     return (
         <main className="chat-root">
             <div className="chat-header">
-                <span className="chat-logo">⚡ MisMatch</span>
+                <Link href="/" className="chat-logo" style={{ textDecoration: 'none' }}>⚡ MisMatch</Link>
                 <StatusBanner status={status} />
                 <div className="chat-header-right">
                     {onlineCount !== null && (

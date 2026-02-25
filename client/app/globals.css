@@ -136,7 +136,7 @@ body {
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.04em;
-  color: #fff;
+  color: var(--text);
 }
 
 .hero-headline-accent {
@@ -375,7 +375,7 @@ body {
   text-align: center;
   margin-bottom: 1rem;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--text);
 }
 
 .section-subtitle {
@@ -415,7 +415,7 @@ body {
 .hiw-card h4 {
   font-size: 1.2rem;
   margin-bottom: 0.75rem;
-  color: #fff;
+  color: var(--text);
 }
 
 .hiw-card p {
@@ -452,7 +452,7 @@ body {
 .security-feature h4 {
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
-  color: #fff;
+  color: var(--text);
 }
 
 .security-feature p {
@@ -773,10 +773,15 @@ body {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  background: #030308;
-  padding: 6px;
+  gap: 12px;
+  background: var(--surface);
+  backdrop-filter: var(--glass);
+  padding: 12px;
   overflow: hidden;
+  margin: 1rem 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .video-tile {
@@ -1089,7 +1094,7 @@ body {
 .legal-title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   margin-bottom: 0.5rem;
 }
 
@@ -1100,7 +1105,7 @@ body {
 
 .legal-content h2 {
   font-size: 1.5rem;
-  color: #fff;
+  color: var(--text);
   margin-top: 2rem;
   margin-bottom: 1rem;
   font-weight: 700;
@@ -1166,7 +1171,7 @@ body {
 .form-textarea {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  color: var(--text);
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   font-family: inherit;
