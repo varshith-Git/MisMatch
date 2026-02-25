@@ -37,23 +37,34 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
 
     // ── Outbound task: drain OutboundMsg → WebSocket ──────────────────────
     let send_task = tokio::spawn(async move {
-        while let Some(msg) = rx.recv().await {
-            let result = match msg {
-                // Relay path: forward raw bytes — zero alloc, no re-serialization
-                OutboundMsg::Raw(text) => {
-                    ws_tx.send(Message::Text(text.into())).await
-                }
-                // Typed path: server-originated messages (Waiting, Paired, PeerLeft)
-                OutboundMsg::Typed(typed) => match serde_json::to_string(&typed) {
-                    Ok(text) => ws_tx.send(Message::Text(text.into())).await,
-                    Err(e) => {
-                        tracing::warn!("Failed to serialize message: {}", e);
-                        continue;
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(30));
+        loop {
+            tokio::select! {
+                Some(msg) = rx.recv() => {
+                    let result = match msg {
+                        // Relay path: forward raw bytes — zero alloc, no re-serialization
+                        OutboundMsg::Raw(text) => {
+                            ws_tx.send(Message::Text(text.into())).await
+                        }
+                        // Typed path: server-originated messages (Waiting, Paired, PeerLeft)
+                        OutboundMsg::Typed(typed) => match serde_json::to_string(&typed) {
+                            Ok(text) => ws_tx.send(Message::Text(text.into())).await,
+                            Err(e) => {
+                                tracing::warn!("Failed to serialize message: {}", e);
+                                continue;
+                            }
+                        },
+                    };
+                    if result.is_err() {
+                        break;
                     }
-                },
-            };
-            if result.is_err() {
-                break;
+                }
+                _ = interval.tick() => {
+                    // Send a ping every 30s. The browser will automatically reply with a Pong.
+                    if ws_tx.send(Message::Ping(vec![])).await.is_err() {
+                        break;
+                    }
+                }
             }
         }
     });
@@ -67,10 +78,13 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     attempt_pair(&state, handle.clone()).await;
 
     // ── Inbound loop: WebSocket → route messages ──────────────────────────
-    while let Some(Ok(raw)) = ws_rx.next().await {
+    // Drop connection if no message (Text/Ping/Pong) is received for 75 seconds.
+    // The send_task sends a Ping every 30s, so the client should Pong back well before 75s.
+    while let Ok(Some(Ok(raw))) = tokio::time::timeout(std::time::Duration::from_secs(75), ws_rx.next()).await {
         let text = match raw {
             Message::Text(t) => t,
             Message::Close(_) => break,
+            Message::Ping(_) | Message::Pong(_) => continue,
             _ => continue,
         };
 
