@@ -550,7 +550,7 @@ body {
 }
 
 .footer-copy {
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 

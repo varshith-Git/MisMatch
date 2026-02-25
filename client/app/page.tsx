@@ -9,7 +9,6 @@ export default function HomePage() {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const [onlineCount, setOnlineCount] = useState<number | null>(null);
-  const [totalMatches, setTotalMatches] = useState<number | null>(null);
 
   // FAQ accordion state
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -22,7 +21,6 @@ export default function HomePage() {
         if (res.ok) {
           const data = await res.json();
           setOnlineCount(data.online);
-          setTotalMatches(data.total_matches);
         }
       } catch (err) {
         // Silently fail if stats endpoint is down
@@ -56,11 +54,6 @@ export default function HomePage() {
           {onlineCount !== null && (
             <div className="online-badge">
               <span className="online-dot" /> {onlineCount.toLocaleString()} online
-            </div>
-          )}
-          {totalMatches !== null && totalMatches > 0 && (
-            <div className="total-matches-badge">
-              🎉 {totalMatches.toLocaleString()} matches
             </div>
           )}
           <ThemeToggle />
