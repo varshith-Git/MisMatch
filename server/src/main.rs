@@ -37,7 +37,8 @@ async fn main() {
         .route("/health", get(|| async { "OK" }))
         .route("/api/stats", get(|State(st): State<Arc<AppState>>| async move {
             Json(serde_json::json!({
-                "online": st.online_count.load(Ordering::Relaxed)
+                "online": st.online_count.load(Ordering::Relaxed),
+                "total_matches": st.total_matches.load(Ordering::Relaxed)
             }))
         }))
         .layer(cors)

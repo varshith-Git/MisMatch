@@ -34,56 +34,32 @@ body {
   color: var(--text);
 }
 
-/* ── Home Page ────────────────────────────────────────────────────────────── */
-.home-root {
-  position: relative;
+/* ── Landing Page (Apple-Style Revamp) ────────────────────────────────────── */
+.landing-root {
+  background: var(--bg);
   min-height: 100vh;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+.hero-section {
+  position: relative;
+  min-height: 90vh;
+  /* take up most of viewport */
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99, 102, 241, .25) 0%, transparent 70%),
-    var(--bg);
-}
-
-.particle-canvas {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Animated glow backdrop (replaces canvas for SSR safety) */
-.home-bg-glow {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(99, 102, 241, .18) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(34, 211, 238, .12) 0%, transparent 60%);
-  animation: glow-drift 8s ease-in-out infinite alternate;
-  z-index: 0;
-  pointer-events: none;
-}
-
-@keyframes glow-drift {
-  from {
-    transform: scale(1) translateY(0);
-  }
-
-  to {
-    transform: scale(1.04) translateY(-12px);
-  }
-}
-
-.home-content {
-  position: relative;
-  z-index: 1;
   text-align: center;
+  padding: 4rem 2rem;
+  z-index: 1;
+}
+
+.hero-content {
+  max-width: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  padding: 3rem 2rem;
+  gap: 2.5rem;
 }
 
 /* Logo */
@@ -108,18 +84,29 @@ body {
   background-clip: text;
 }
 
-.tagline {
-  font-size: 1.4rem;
-  font-weight: 300;
-  color: var(--text-muted);
-  line-height: 1.7;
+.hero-headline {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #fff;
 }
 
-.tagline-accent {
-  font-weight: 600;
-  color: var(--text);
+.hero-headline-accent {
+  background: linear-gradient(135deg, #c4b5fd, #818cf8, var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Online Badge & Total Matches (Re-used across site) */
 .online-badge {
   display: inline-flex;
   align-items: center;
@@ -127,6 +114,20 @@ body {
   background: rgba(34, 211, 238, 0.1);
   border: 1px solid rgba(34, 211, 238, 0.2);
   color: var(--cyan);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-xl);
+  font-size: 0.9rem;
+  font-weight: 500;
+  backdrop-filter: var(--glass);
+}
+
+.total-matches-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #c4b5fd;
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-xl);
   font-size: 0.9rem;
@@ -160,29 +161,230 @@ body {
   }
 }
 
-/* Feature pills */
-.features {
+/* Animated glow backdrop */
+.home-bg-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(99, 102, 241, .18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(34, 211, 238, .12) 0%, transparent 60%);
+  animation: glow-drift 8s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes glow-drift {
+  from {
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.04) translateY(-12px);
+  }
+}
+
+.start-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: .75rem;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-.feature-pill {
-  padding: .45rem 1.1rem;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  font-size: .875rem;
-  font-weight: 500;
-  backdrop-filter: var(--glass);
+/* ── How It Works Section ────────────────────────────────────────────── */
+.how-it-works-section,
+.security-section,
+.faq-section {
+  padding: 6rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.section-subtitle {
+  text-align: center;
   color: var(--text-muted);
-  transition: border-color .2s, color .2s;
+  font-size: 1.2rem;
+  margin-bottom: 4rem;
+  max-width: 600px;
+  margin-inline: auto;
 }
 
-.feature-pill:hover {
-  border-color: var(--accent);
-  color: var(--text);
+.hiw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+}
+
+.hiw-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 2.5rem 2rem;
+  border-radius: var(--radius-xl);
+  backdrop-filter: var(--glass);
+  transition: transform 0.3s, background 0.3s;
+}
+
+.hiw-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hiw-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.hiw-card h4 {
+  font-size: 1.2rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.hiw-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* ── Security Section ────────────────────────────────────────────── */
+.security-section {
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(34, 211, 238, 0.05) 0%, transparent 100%);
+}
+
+.security-content {
+  text-align: center;
+}
+
+.security-features {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 4rem auto 0;
+  text-align: left;
+}
+
+.security-feature {
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 4px solid var(--cyan);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+}
+
+.security-feature h4 {
+  font-size: 1.3rem;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.security-feature p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── FAQ Section ────────────────────────────────────────────── */
+.faq-list {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.faq-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.faq-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.faq-question {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.faq-toggle {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  width: 24px;
+  text-align: center;
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  padding: 0 1.5rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.faq-item.open .faq-answer {
+  max-height: 200px;
+  /* generous height */
+  padding-bottom: 1.5rem;
+}
+
+.faq-item.open .faq-toggle {
+  color: var(--cyan);
+}
+
+/* ── Footer ────────────────────────────────────────────── */
+.landing-footer {
+  text-align: center;
+  padding: 4rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--accent);
+}
+
+.footer-dot {
+  color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-copy {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.85rem;
 }
 
 /* CTA button */
@@ -634,6 +836,22 @@ body {
   .ctrl-btn {
     padding: .65rem 1.4rem;
     font-size: .875rem;
+  }
+
+  .how-it-works-section,
+  .security-section,
+  .faq-section {
+    padding: 4rem 1.5rem;
+  }
+
+  .hero-section {
+    padding: 2rem 1rem;
+    min-height: auto;
+    padding-top: 4rem;
+  }
+
+  .hero-headline {
+    font-size: 2.2rem;
   }
 }
 

@@ -57,10 +57,6 @@ impl WaitingQueue {
         self.peers.remove(&id);
         // stale `id` left in order — cleaned up lazily in pop()
     }
-
-    pub fn is_empty(&self) -> bool {
-        self.peers.is_empty()
-    }
 }
 
 pub type SharedQueue = Arc<tokio::sync::Mutex<WaitingQueue>>;
@@ -81,6 +77,7 @@ pub struct AppState {
     pub waiting: SharedQueue,
     pub sessions: Sessions,
     pub online_count: Arc<AtomicUsize>,
+    pub total_matches: Arc<AtomicUsize>,
 }
 
 impl AppState {
@@ -89,6 +86,7 @@ impl AppState {
             waiting: Arc::new(tokio::sync::Mutex::new(WaitingQueue::new())),
             sessions: Arc::new(DashMap::new()),
             online_count: Arc::new(AtomicUsize::new(0)),
+            total_matches: Arc::new(AtomicUsize::new(0)),
         }
     }
 

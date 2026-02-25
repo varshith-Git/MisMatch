@@ -163,6 +163,7 @@ fn extract_type(text: &str) -> Option<&str> {
 /// pair them immediately.
 async fn attempt_pair(state: &Arc<AppState>, peer: PeerHandle) {
     if let Some(partner) = state.try_pair(peer.clone()).await {
+        state.total_matches.fetch_add(1, Ordering::Relaxed);
         let _ = peer.tx.send(OutboundMsg::Typed(SignalMessage::Paired { you_are_offerer: true })).await;
         let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::Paired { you_are_offerer: false })).await;
         tracing::info!("Paired {} <-> {}", peer.id, partner.id);
