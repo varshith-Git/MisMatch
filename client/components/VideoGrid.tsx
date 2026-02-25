@@ -64,7 +64,7 @@ export default function VideoGrid({ localStream, remoteStream, status }: VideoGr
                 <span className="video-label video-label-remote">Stranger</span>
             </div>
 
-            {/* Local video — small PiP */}
+            {/* Local video — equal half */}
             <div className="video-tile video-local">
                 <video
                     ref={localRef}
