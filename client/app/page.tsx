@@ -44,65 +44,89 @@ export default function HomePage() {
     <main className="landing-root">
       <div className="home-bg-glow" />
 
+      {/* ── Landing Navigation Header ─────────────────────────────────────────── */}
+      <header className="landing-nav">
+        <div className="logo-wrap">
+          <span className="logo-icon">⚡</span>
+          <h1 className="logo-text">MisMatch</h1>
+        </div>
+
+        <div className="nav-stats">
+          {onlineCount !== null && (
+            <div className="online-badge">
+              <span className="online-dot" /> {onlineCount.toLocaleString()} online
+            </div>
+          )}
+          {totalMatches !== null && totalMatches > 0 && (
+            <div className="total-matches-badge">
+              🎉 {totalMatches.toLocaleString()} matches
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* ── Hero Section ──────────────────────────────────────────────────────── */}
       <section className="hero-section">
         <div className="hero-content">
-          <div className="logo-wrap">
-            <span className="logo-icon">⚡</span>
-            <h1 className="logo-text">MisMatch</h1>
-          </div>
+          <div className="hero-text-col">
+            <h2 className="hero-headline">
+              Meet someone new.<br />
+              <span className="hero-headline-accent">Instantly. Anonymously. Anywhere.</span>
+            </h2>
 
-          <h2 className="hero-headline">
-            Meet someone new.<br />
-            <span className="hero-headline-accent">Instantly. Anonymously. Anywhere.</span>
-          </h2>
-
-          <div className="hero-stats">
-            {onlineCount !== null && (
-              <div className="online-badge">
-                <span className="online-dot" /> {onlineCount.toLocaleString()} online now
-              </div>
-            )}
-            {totalMatches !== null && totalMatches > 0 && (
-              <div className="total-matches-badge">
-                🎉 {totalMatches.toLocaleString()} matches made
-              </div>
-            )}
-          </div>
-
-          <div className="start-container">
-            <label className="tc-label">
-              <input
-                id="tc-check"
-                type="checkbox"
-                className="tc-checkbox"
-                checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
-              />
-              <span className="tc-text">
-                I am 18+ and agree to the{' '}
-                <Link href="/terms-of-service" className="tc-link">Terms of Service</Link>
-                {' '}— I will be respectful and will not share inappropriate content.
-              </span>
-            </label>
-
-            <button
-              id="btn-start"
-              className={`start-btn ${!agreed ? 'disabled' : ''}`}
-              onClick={handleStart}
-              disabled={!agreed}
-              title={!agreed ? 'Please agree to the terms to continue' : ''}
-            >
-              <span className="start-btn-inner">
-                Start Chatting
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
-            <p className="disclaimer">
-              By clicking Start you confirm you have read and agreed to the terms above.
+            <p className="hero-subtext">
+              Jump into a live video conversation in seconds. No accounts, no friction, just pure human connection encrypted end-to-end.
             </p>
+
+            <div className="start-container">
+              <label className="tc-label">
+                <input
+                  id="tc-check"
+                  type="checkbox"
+                  className="tc-checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
+                <span className="tc-text">
+                  I am 18+ and agree to the{' '}
+                  <Link href="/terms-of-service" className="tc-link">Terms of Service</Link>
+                  {' '}— I will be respectful and will not share inappropriate content.
+                </span>
+              </label>
+
+              <button
+                id="btn-start"
+                className={`start-btn ${!agreed ? 'disabled' : ''}`}
+                onClick={handleStart}
+                disabled={!agreed}
+                title={!agreed ? 'Please agree to the terms to continue' : ''}
+              >
+                <span className="start-btn-inner">
+                  Start Chatting
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="hero-visual-col">
+            <div className="visual-card">
+              <div className="visual-header">
+                <span className="dot red"></span>
+                <span className="dot yellow"></span>
+                <span className="dot green"></span>
+              </div>
+              <div className="visual-body">
+                <div className="mock-video placeholder-remote">
+                  <div className="mock-avatar">👋</div>
+                </div>
+                <div className="mock-video placeholder-local">
+                  <div className="mock-avatar">📸</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

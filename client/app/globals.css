@@ -45,24 +45,36 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Landing Navigation Header ── */
+.landing-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .hero-section {
   position: relative;
-  min-height: 90vh;
-  /* take up most of viewport */
+  min-height: calc(100vh - 80px);
+  /* Account for nav header */
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
+  padding: 2rem;
   z-index: 1;
 }
 
 .hero-content {
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
-  gap: 2.5rem;
+  gap: 4rem;
 }
 
 /* Logo */
@@ -87,8 +99,25 @@ body {
   background-clip: text;
 }
 
+.hero-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 1.5rem;
+}
+
+.hero-subtext {
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 90%;
+  margin-bottom: 0.5rem;
+}
+
 .hero-headline {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(2.5rem, 4.5vw, 4.5rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.04em;
@@ -102,11 +131,10 @@ body {
   background-clip: text;
 }
 
-.hero-stats {
+.nav-stats {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 1rem;
-  justify-content: center;
 }
 
 /* Online Badge & Total Matches (Re-used across site) */
@@ -189,9 +217,102 @@ body {
 .start-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.5rem;
   margin-top: 1rem;
+}
+
+/* Hero Visual Mockup */
+.hero-visual-col {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.visual-card {
+  background: rgba(18, 18, 32, 0.6);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 1rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 80px rgba(99, 102, 241, 0.15);
+  transform: rotate(2deg) translateY(-10px);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.visual-card:hover {
+  transform: rotate(0) translateY(-20px);
+}
+
+.visual-header {
+  display: flex;
+  gap: 6px;
+  padding-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.visual-header .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.visual-header .red {
+  background: #ff5f56;
+}
+
+.visual-header .yellow {
+  background: #ffbd2e;
+}
+
+.visual-header .green {
+  background: #27c93f;
+}
+
+.visual-body {
+  position: relative;
+  aspect-ratio: 4/3;
+  width: 100%;
+  background: var(--bg2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mock-video {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #1e1e2d, #12121c);
+}
+
+.placeholder-remote {
+  inset: 0;
+  z-index: 1;
+}
+
+.placeholder-local {
+  bottom: 1rem;
+  right: 1rem;
+  width: 30%;
+  aspect-ratio: 3/4;
+  border-radius: 0.75rem;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, #2a2a3e, #1a1a26);
+}
+
+.mock-avatar {
+  font-size: 4rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+.placeholder-local .mock-avatar {
+  font-size: 2rem;
 }
 
 /* ── How It Works Section ────────────────────────────────────────────── */
@@ -847,14 +968,38 @@ body {
     padding: 4rem 1.5rem;
   }
 
+  .landing-nav {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
   .hero-section {
     padding: 2rem 1rem;
     min-height: auto;
-    padding-top: 4rem;
+    padding-top: 2rem;
+  }
+
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .hero-text-col {
+    align-items: center;
+    text-align: center;
+  }
+
+  .start-container {
+    align-items: center;
+  }
+
+  .hero-visual-col {
+    justify-content: center;
   }
 
   .hero-headline {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
   }
 }
 
