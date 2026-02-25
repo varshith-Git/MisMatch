@@ -62,33 +62,35 @@ body {
 
 /* ── Landing Navigation Header ── */
 .landing-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  width: 100%;
   z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 2rem;
-  max-width: 100%;
-  margin: 0 auto;
-  background: rgba(var(--bg-rgb), 0.6);
+  background: rgba(7, 7, 15, 0.75);
   backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.3s, border-color 0.3s;
 }
 
 [data-theme='light'] .landing-nav {
-  background: rgba(251, 251, 253, 0.75);
+  background: rgba(251, 251, 253, 0.85);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .hero-section {
   position: relative;
-  min-height: calc(100vh - 80px);
-  /* Account for nav header */
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
+  padding-top: 120px;
   z-index: 1;
 }
 
@@ -1042,7 +1044,7 @@ body {
   .hero-section {
     padding: 2rem 1rem;
     min-height: auto;
-    padding-top: 2rem;
+    padding-top: 150px;
   }
 
   .hero-content {
