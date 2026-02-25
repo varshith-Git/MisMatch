@@ -26,6 +26,8 @@ export type IceCandidatePayload = {
 
 export class PeerConnection {
     private pc: RTCPeerConnection;
+    private iceCandidateQueue: IceCandidatePayload[] = [];
+    private hasRemoteDescription: boolean = false;
 
     public onRemoteStream: (stream: MediaStream) => void = () => { };
     public onIceCandidate: (payload: IceCandidatePayload) => void = () => { };
@@ -76,9 +78,12 @@ export class PeerConnection {
         return offer.sdp!;
     }
 
-    /** Answerer: receive the offer, create and send back an answer. */
+    /** Answerer: receive the offer, create and return an answer. */
     async handleOffer(sdp: string): Promise<string> {
         await this.pc.setRemoteDescription({ type: 'offer', sdp });
+        this.hasRemoteDescription = true;
+        this.drainIceCandidateQueue();
+
         const answer = await this.pc.createAnswer();
         await this.pc.setLocalDescription(answer);
         return answer.sdp!;
@@ -87,10 +92,18 @@ export class PeerConnection {
     /** Offerer: receive the answerer's SDP. */
     async handleAnswer(sdp: string): Promise<void> {
         await this.pc.setRemoteDescription({ type: 'answer', sdp });
+        this.hasRemoteDescription = true;
+        this.drainIceCandidateQueue();
     }
 
     /** Add an ICE candidate received from the signaling server. */
     async addIceCandidate(payload: IceCandidatePayload): Promise<void> {
+        if (!this.hasRemoteDescription) {
+            // Buffer candidate if remote description isn't set yet (race condition fix)
+            this.iceCandidateQueue.push(payload);
+            return;
+        }
+
         try {
             await this.pc.addIceCandidate({
                 candidate: payload.candidate,
@@ -99,6 +112,21 @@ export class PeerConnection {
             });
         } catch (e) {
             console.warn('[WebRTC] Failed to add ICE candidate:', e);
+        }
+    }
+
+    private async drainIceCandidateQueue() {
+        while (this.iceCandidateQueue.length > 0) {
+            const candidate = this.iceCandidateQueue.shift()!;
+            try {
+                await this.pc.addIceCandidate({
+                    candidate: candidate.candidate,
+                    sdpMid: candidate.sdp_mid,
+                    sdpMLineIndex: candidate.sdp_m_line_index,
+                });
+            } catch (e) {
+                console.warn('[WebRTC] Failed to add buffered ICE candidate:', e);
+            }
         }
     }
 
