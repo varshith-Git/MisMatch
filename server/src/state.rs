@@ -32,10 +32,11 @@ impl WaitingQueue {
         }
     }
 
-    /// Add a peer to the back of the queue — O(1).
     pub fn push(&mut self, peer: PeerHandle) {
-        self.order.push_back(peer.id);
-        self.peers.insert(peer.id, peer);
+        if !self.peers.contains_key(&peer.id) {
+            self.order.push_back(peer.id);
+            self.peers.insert(peer.id, peer);
+        }
     }
 
     /// Pop the oldest waiting peer — O(1).
@@ -88,13 +89,15 @@ impl AppState {
         }
     }
 
-    /// Try to pair the incoming peer with the first peer in the waiting queue.
-    /// Returns `Some(partner_handle)` if pairing succeeded, `None` if the peer
-    /// was added to the queue instead.
     pub async fn try_pair(&self, incoming: PeerHandle) -> Option<PeerHandle> {
         let mut queue = self.waiting.lock().await;
 
-        if let Some(partner) = queue.pop() {
+        while let Some(partner) = queue.pop() {
+            // Guard against dead connections still in the queue
+            if partner.tx.is_closed() {
+                continue;
+            }
+
             // Don't pair a peer with itself (safety guard)
             if partner.id == incoming.id {
                 queue.push(incoming);
@@ -105,18 +108,22 @@ impl AppState {
             self.sessions.insert(incoming.id, Session { partner: partner.clone() });
             self.sessions.insert(partner.id, Session { partner: incoming.clone() });
 
-            Some(partner)
-        } else {
-            queue.push(incoming);
-            None
+            return Some(partner);
         }
+
+        queue.push(incoming);
+        None
     }
 
-    /// Remove a peer from an active session and return the partner's handle.
     pub fn leave_session(&self, peer_id: Uuid) -> Option<PeerHandle> {
         if let Some((_, session)) = self.sessions.remove(&peer_id) {
-            self.sessions.remove(&session.partner.id);
-            Some(session.partner)
+            // ONLY return the partner if WE successfully removed their half of the session.
+            // If it returns None, another thread (e.g. the partner's) already tore down this session.
+            if let Some((_, _)) = self.sessions.remove(&session.partner.id) {
+                Some(session.partner)
+            } else {
+                None
+            }
         } else {
             None
         }
