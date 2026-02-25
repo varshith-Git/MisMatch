@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use tokio::sync::mpsc;
 use uuid::Uuid;
 
-use crate::messages::SignalMessage;
+use crate::messages::OutboundMsg;
 
 // ── Per-connection TX handle ─────────────────────────────────────────────────
 
@@ -12,7 +12,7 @@ use crate::messages::SignalMessage;
 #[derive(Clone)]
 pub struct PeerHandle {
     pub id: Uuid,
-    pub tx: mpsc::Sender<SignalMessage>,
+    pub tx: mpsc::Sender<OutboundMsg>,
 }
 
 // ── Waiting queue ────────────────────────────────────────────────────────────

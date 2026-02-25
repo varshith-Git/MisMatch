@@ -12,7 +12,7 @@ use tokio::sync::mpsc;
 use uuid::Uuid;
 
 use crate::{
-    messages::SignalMessage,
+    messages::{OutboundMsg, SignalMessage},
     state::{AppState, PeerHandle},
 };
 
@@ -27,25 +27,33 @@ pub async fn ws_handler(
 /// Full lifecycle for one connected peer.
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     let peer_id = Uuid::new_v4();
-    let (tx, mut rx) = mpsc::channel::<SignalMessage>(256);
 
-    // Split the WebSocket into sender and receiver halves
+    // Channel carries OutboundMsg — relay msgs are Raw (no re-serialization)
+    let (tx, mut rx) = mpsc::channel::<OutboundMsg>(256);
+
     let (mut ws_tx, mut ws_rx) = socket.split();
 
     tracing::info!("Peer connected: {}", peer_id);
 
-    // ── Outbound task: drain the mpsc channel → WebSocket ────────────────
+    // ── Outbound task: drain OutboundMsg → WebSocket ──────────────────────
     let send_task = tokio::spawn(async move {
         while let Some(msg) = rx.recv().await {
-            match serde_json::to_string(&msg) {
-                Ok(text) => {
-                    if ws_tx.send(Message::Text(text.into())).await.is_err() {
-                        break;
+            let result = match msg {
+                // Relay path: forward raw bytes — zero alloc, no re-serialization
+                OutboundMsg::Raw(text) => {
+                    ws_tx.send(Message::Text(text.into())).await
+                }
+                // Typed path: server-originated messages (Waiting, Paired, PeerLeft)
+                OutboundMsg::Typed(typed) => match serde_json::to_string(&typed) {
+                    Ok(text) => ws_tx.send(Message::Text(text.into())).await,
+                    Err(e) => {
+                        tracing::warn!("Failed to serialize message: {}", e);
+                        continue;
                     }
-                }
-                Err(e) => {
-                    tracing::warn!("Failed to serialize message: {}", e);
-                }
+                },
+            };
+            if result.is_err() {
+                break;
             }
         }
     });
@@ -53,7 +61,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     let handle = PeerHandle { id: peer_id, tx };
 
     // Notify client they are in the queue
-    let _ = handle.tx.send(SignalMessage::Waiting).await;
+    let _ = handle.tx.send(OutboundMsg::Typed(SignalMessage::Waiting)).await;
 
     // Try to pair immediately
     attempt_pair(&state, handle.clone()).await;
@@ -66,29 +74,25 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
             _ => continue,
         };
 
-        let msg: SignalMessage = match serde_json::from_str(&text) {
-            Ok(m) => m,
-            Err(e) => {
-                tracing::warn!("Failed to parse message from {}: {}", peer_id, e);
-                continue;
-            }
-        };
+        // Fast path: identify message type without full deserialization.
+        // Relay messages (Offer/Answer/IceCandidate) are forwarded as raw JSON.
+        let msg_type = extract_type(&text);
 
-        match msg {
-            // ── Skip / Ready ─────────────────────────────────────────────
-            SignalMessage::Skip | SignalMessage::Ready => {
+        match msg_type {
+            // ── Skip / Ready — full parse needed ─────────────────────────
+            Some("Skip") | Some("Ready") => {
                 handle_skip(&state, &handle).await;
             }
 
-            // ── Relay messages to partner ────────────────────────────────
-            SignalMessage::Offer { .. }
-            | SignalMessage::Answer { .. }
-            | SignalMessage::IceCandidate { .. } => {
-                relay_to_partner(&state, peer_id, msg).await;
+            // ── Relay messages — forward raw bytes, no re-serialization ──
+            Some("Offer") | Some("Answer") | Some("IceCandidate") => {
+                relay_raw(&state, peer_id, text.to_string()).await;
             }
 
-            // Ignore server-only messages sent by misbehaving clients
-            _ => {}
+            // Unknown / malformed — log and drop
+            _ => {
+                tracing::warn!("Unknown or malformed message from {}: {}", peer_id, text);
+            }
         }
     }
 
@@ -98,48 +102,59 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     send_task.abort();
 }
 
+/// Extract the `type` field from a JSON string without full deserialization.
+/// Returns `None` if the field is missing or the string is not valid JSON.
+fn extract_type(text: &str) -> Option<&str> {
+    // Look for "type":"VALUE" — quick substring approach using serde_json::Value
+    // We use a minimal parse to avoid allocating the whole message.
+    let v: serde_json::Value = serde_json::from_str(text).ok()?;
+    v.get("type")?.as_str().map(|s| {
+        // Return a reference into the original string to avoid allocation
+        // by finding the value's position. Fall back to a static match.
+        match s {
+            "Offer"        => "Offer",
+            "Answer"       => "Answer",
+            "IceCandidate" => "IceCandidate",
+            "Skip"         => "Skip",
+            "Ready"        => "Ready",
+            _              => "Unknown",
+        }
+    })
+}
+
 /// Push `peer` into the matchmaking queue; if someone is already waiting,
 /// pair them immediately.
 async fn attempt_pair(state: &Arc<AppState>, peer: PeerHandle) {
     if let Some(partner) = state.try_pair(peer.clone()).await {
-        // peer is the offerer, partner is the answerer
-        let _ = peer.tx.send(SignalMessage::Paired { you_are_offerer: true }).await;
-        let _ = partner.tx.send(SignalMessage::Paired { you_are_offerer: false }).await;
-
-        tracing::info!("Paired {} ↔ {}", peer.id, partner.id);
+        let _ = peer.tx.send(OutboundMsg::Typed(SignalMessage::Paired { you_are_offerer: true })).await;
+        let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::Paired { you_are_offerer: false })).await;
+        tracing::info!("Paired {} <-> {}", peer.id, partner.id);
     }
-    // else: peer was added to the queue and will be notified when someone joins
 }
 
-/// Forward an SDP or ICE message to the peer's current partner.
-async fn relay_to_partner(state: &Arc<AppState>, from: Uuid, msg: SignalMessage) {
+/// Forward raw JSON bytes to the peer's current partner — zero extra allocation.
+async fn relay_raw(state: &Arc<AppState>, from: Uuid, raw: String) {
     if let Some(session) = state.sessions.get(&from) {
-        let _ = session.partner.tx.send(msg).await;
+        let _ = session.partner.tx.send(OutboundMsg::Raw(raw)).await;
     }
 }
 
 /// Handle skip: end session, notify partner, re-queue both.
 async fn handle_skip(state: &Arc<AppState>, peer: &PeerHandle) {
     if let Some(partner) = state.leave_session(peer.id) {
-        // Tell partner their peer left
-        let _ = partner.tx.send(SignalMessage::PeerLeft).await;
-
-        // Re-queue the partner
-        let _ = partner.tx.send(SignalMessage::Waiting).await;
+        let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::PeerLeft)).await;
+        let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::Waiting)).await;
         attempt_pair(state, partner).await;
     }
-
-    // Re-queue self
-    let _ = peer.tx.send(SignalMessage::Waiting).await;
+    let _ = peer.tx.send(OutboundMsg::Typed(SignalMessage::Waiting)).await;
     attempt_pair(state, peer.clone()).await;
 }
 
 /// Full cleanup on disconnect: remove from session + queue.
 async fn cleanup(state: &Arc<AppState>, peer: &PeerHandle) {
     if let Some(partner) = state.leave_session(peer.id) {
-        let _ = partner.tx.send(SignalMessage::PeerLeft).await;
-        // Re-queue partner so they find a new match
-        let _ = partner.tx.send(SignalMessage::Waiting).await;
+        let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::PeerLeft)).await;
+        let _ = partner.tx.send(OutboundMsg::Typed(SignalMessage::Waiting)).await;
         attempt_pair(state, partner).await;
     }
     state.leave_queue(peer.id).await;

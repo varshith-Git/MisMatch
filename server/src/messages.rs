@@ -10,21 +10,7 @@ pub enum SignalMessage {
     Waiting,
 
     /// Sent to both peers when a match is found.
-    /// `you_are_offerer = true` means this peer must create the SDP Offer.
     Paired { you_are_offerer: bool },
-
-    /// Relayed SDP offer (offerer → answerer, via server).
-    Offer { sdp: String },
-
-    /// Relayed SDP answer (answerer → offerer, via server).
-    Answer { sdp: String },
-
-    /// Relayed ICE candidate (either direction, via server).
-    IceCandidate {
-        candidate: String,
-        sdp_mid: String,
-        sdp_m_line_index: u16,
-    },
 
     /// Partner disconnected or skipped.
     PeerLeft,
@@ -33,6 +19,29 @@ pub enum SignalMessage {
     /// Client wants to skip to the next stranger.
     Skip,
 
-    /// Client is ready and waiting for a pair (sent on re-connect / after skip).
+    /// Client is ready and waiting for a pair.
     Ready,
+
+    // ── Relay (Client → Server → Client) ──────────────────────────────────
+    // These are parsed only to identify their type; the raw bytes are
+    // forwarded directly to avoid a double alloc (parse + re-serialize).
+    // Full parse still happens here for type-checking.
+    Offer { sdp: String },
+    Answer { sdp: String },
+    IceCandidate {
+        candidate: String,
+        sdp_mid: String,
+        sdp_m_line_index: u16,
+    },
+}
+
+/// An outbound message from the server to a client.
+/// Either a typed message that needs serialization, or a pre-serialized
+/// raw JSON string forwarded directly from another peer (zero extra alloc).
+#[derive(Debug, Clone)]
+pub enum OutboundMsg {
+    /// Server-originated message — serialized at send time.
+    Typed(SignalMessage),
+    /// Raw JSON from another peer — forwarded as-is, no re-serialization.
+    Raw(String),
 }

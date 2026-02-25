@@ -24,15 +24,27 @@ export type SignalMessage =
 // Only log in development — avoids JSON.stringify on large SDP objects in prod
 const DEBUG = process.env.NODE_ENV === 'development';
 
+const INITIAL_RETRY_DELAY_MS = 1_000;  // 1s
+const MAX_RETRY_DELAY_MS = 30_000; // 30s cap
+const MAX_RETRIES = 8;      // ~4 min total before giving up
+
 type MessageHandler = (msg: SignalMessage) => void;
 
 export class SignalingClient {
     private ws: WebSocket | null = null;
     private readonly url: string;
+    private retryDelay = INITIAL_RETRY_DELAY_MS;
+    private retryCount = 0;
+    private retryTimer: ReturnType<typeof setTimeout> | null = null;
+    private closed = false; // true when close() is called explicitly
 
     public onMessage: MessageHandler = () => { };
     public onOpen: () => void = () => { };
     public onClose: () => void = () => { };
+    /** Called before each reconnect attempt with the attempt number and delay */
+    public onReconnecting: (attempt: number, delayMs: number) => void = () => { };
+    /** Called when all retries are exhausted */
+    public onGiveUp: () => void = () => { };
 
     constructor(url: string) {
         this.url = url;
@@ -40,12 +52,16 @@ export class SignalingClient {
 
     connect(): void {
         if (this.ws) this.ws.close();
+        this.closed = false;
 
         const ws = new WebSocket(this.url);
         this.ws = ws;
 
         ws.onopen = () => {
-            if (DEBUG) console.log('[Signaling] Connected to server');
+            // Reset backoff on successful connection
+            this.retryDelay = INITIAL_RETRY_DELAY_MS;
+            this.retryCount = 0;
+            if (DEBUG) console.log('[Signaling] Connected');
             this.onOpen();
         };
 
@@ -59,13 +75,38 @@ export class SignalingClient {
             }
         };
 
-        ws.onclose = () => {
-            if (DEBUG) console.log('[Signaling] Disconnected');
-            this.onClose();
+        ws.onclose = (event) => {
+            if (DEBUG) console.log('[Signaling] Disconnected', event.code);
+
+            // Normal explicit close — don't retry
+            if (this.closed) {
+                this.onClose();
+                return;
+            }
+
+            // Abnormal close (network drop, Render cold-start, etc.) — retry
+            if (this.retryCount < MAX_RETRIES) {
+                this.retryCount++;
+                this.onReconnecting(this.retryCount, this.retryDelay);
+                if (DEBUG) console.log(`[Signaling] Retry ${this.retryCount}/${MAX_RETRIES} in ${this.retryDelay}ms`);
+
+                this.retryTimer = setTimeout(() => {
+                    this.connect();
+                }, this.retryDelay);
+
+                // Exponential backoff with jitter (±10%) to avoid thundering herd
+                const jitter = this.retryDelay * 0.1 * (Math.random() * 2 - 1);
+                this.retryDelay = Math.min(this.retryDelay * 2 + jitter, MAX_RETRY_DELAY_MS);
+            } else {
+                if (DEBUG) console.log('[Signaling] Max retries reached');
+                this.onGiveUp();
+                this.onClose();
+            }
         };
 
-        ws.onerror = (err) => {
-            console.error('[Signaling] error', err);
+        ws.onerror = () => {
+            // onclose fires after onerror — backoff handled there
+            if (DEBUG) console.error('[Signaling] WebSocket error');
         };
     }
 
@@ -75,11 +116,16 @@ export class SignalingClient {
             if (DEBUG) console.log('[Signaling] →', msg.type);
             this.ws.send(text);
         } else {
-            console.warn('[Signaling] Cannot send — WebSocket not open');
+            if (DEBUG) console.warn('[Signaling] Cannot send — not open');
         }
     }
 
     close(): void {
+        this.closed = true;
+        if (this.retryTimer !== null) {
+            clearTimeout(this.retryTimer);
+            this.retryTimer = null;
+        }
         this.ws?.close();
         this.ws = null;
     }
