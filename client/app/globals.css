@@ -394,17 +394,19 @@ body {
 }
 
 .hiw-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface);
+  border: 1px solid var(--border);
   padding: 2.5rem 2rem;
   border-radius: var(--radius-xl);
   backdrop-filter: var(--glass);
-  transition: transform 0.3s, background 0.3s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
 }
 
 .hiw-card:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent);
 }
 
 .hiw-icon {
@@ -443,10 +445,13 @@ body {
 }
 
 .security-feature {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-left: 4px solid var(--cyan);
   padding: 2rem;
   border-radius: var(--radius-lg);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+  backdrop-filter: var(--glass);
 }
 
 .security-feature h4 {
@@ -470,16 +475,19 @@ body {
 }
 
 .faq-item {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  backdrop-filter: var(--glass);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .faq-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
 }
 
 .faq-question {
