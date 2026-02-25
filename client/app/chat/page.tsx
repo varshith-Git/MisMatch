@@ -25,6 +25,24 @@ export default function ChatPage() {
     const pcRef = useRef<PeerConnection | null>(null);
     const isOffererRef = useRef(false);
 
+    // ── Online Count ────────────────────────────────────────────────────────
+    const [onlineCount, setOnlineCount] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await fetch('https://mismatch-cx4b.onrender.com/api/stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    setOnlineCount(data.online);
+                }
+            } catch (err) { }
+        };
+        fetchStats();
+        const interval = setInterval(fetchStats, 15000);
+        return () => clearInterval(interval);
+    }, []);
+
     // ── Get camera / mic ────────────────────────────────────────────────────
     useEffect(() => {
         navigator.mediaDevices
@@ -174,6 +192,13 @@ export default function ChatPage() {
             <div className="chat-header">
                 <span className="chat-logo">⚡ MisMatch</span>
                 <StatusBanner status={status} />
+                <div className="chat-header-right">
+                    {onlineCount !== null && (
+                        <div className="chat-online-badge">
+                            <span className="online-dot" /> {onlineCount.toLocaleString()}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <VideoGrid localStream={localStream} remoteStream={remoteStream} status={status} />

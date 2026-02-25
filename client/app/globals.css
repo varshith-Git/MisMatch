@@ -325,6 +325,26 @@ body {
   background-clip: text;
 }
 
+.chat-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chat-online-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(34, 211, 238, 0.1);
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  color: var(--cyan);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-xl);
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: var(--glass);
+}
+
 /* ── Status Banner ────────────────────────────────────────────────────────── */
 .status-banner {
   display: flex;
