@@ -826,6 +826,10 @@ body {
   filter: blur(32px) brightness(.3);
 }
 
+.video-local .video-el {
+  transform: scaleX(-1);
+}
+
 .report-flag-btn {
   position: absolute;
   top: 1rem;
