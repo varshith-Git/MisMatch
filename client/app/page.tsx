@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -70,7 +72,7 @@ export default function HomePage() {
           />
           <span className="tc-text">
             I am 18+ and agree to the{' '}
-            <span className="tc-link">Terms of Service</span>
+            <Link href="/terms-of-service" className="tc-link">Terms of Service</Link>
             {' '}— I will be respectful and will not share inappropriate content.
           </span>
         </label>
@@ -93,6 +95,12 @@ export default function HomePage() {
         <p className="disclaimer">
           By clicking Start you confirm you have read and agreed to the terms above.
         </p>
+
+        <footer className="home-footer">
+          <Link href="/privacy-policy">Privacy Policy</Link>
+          <Link href="/community-guidelines">Community Guidelines</Link>
+          <Link href="/report">Report Abuse</Link>
+        </footer>
       </div>
     </main>
   );
