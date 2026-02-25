@@ -1,31 +1,22 @@
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM rust:1.82-slim AS builder
+# ── Stage 1: Build (static binary with musl) ──────────────────────────────────
+FROM rust:latest AS builder
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Add musl target for a fully static binary (no system lib dependencies)
+RUN rustup target add x86_64-unknown-linux-musl
+RUN apt-get update && apt-get install -y --no-install-recommends musl-tools && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# Copy everything and build
 COPY . .
-RUN cargo build --release
 
-# ── Stage 2: Runtime ──────────────────────────────────────────────────────────
-FROM debian:bookworm-slim AS runtime
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# ── Stage 2: Minimal runtime (no libc needed, binary is static) ───────────────
+FROM scratch AS runtime
 
-WORKDIR /app
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mismatch-server /mismatch-server
 
-COPY --from=builder /app/target/release/mismatch-server ./mismatch-server
-
-# Render and Koyeb inject $PORT, Fly.io uses 8080 by default
+# Render / Koyeb / Fly.io inject $PORT at runtime
 ENV PORT=8080
 EXPOSE 8080
 
-CMD ["./mismatch-server"]
+CMD ["/mismatch-server"]
