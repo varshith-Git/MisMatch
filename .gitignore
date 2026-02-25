@@ -1,0 +1,19 @@
+# Rust
+server/target/
+server/Cargo.lock
+
+# Node
+client/node_modules/
+client/.next/
+client/.env.local
+client/.npm-cache/
+.npm-cache/
+client/next-env.d.ts
+client/tsconfig.tsbuildinfo
+
+# Certs (auto-generated)
+server/certs/
+
+# OS
+.DS_Store
+*.swp
