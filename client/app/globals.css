@@ -26,6 +26,21 @@
   --glass: blur(18px) saturate(160%);
 }
 
+[data-theme='light'] {
+  --bg: #fbfbfd;
+  --bg2: #ffffff;
+  --surface: rgba(255, 255, 255, 0.75);
+  --border: rgba(0, 0, 0, 0.12);
+  --accent: #0066cc;
+  --accent2: #0077ed;
+  --cyan: #0071e3;
+  --green: #34c759;
+  --red: #ff3b30;
+  --text: #1d1d1f;
+  --text-muted: #86868b;
+  --glass: blur(20px) saturate(180%);
+}
+
 html,
 body {
   height: 100%;
@@ -158,12 +173,40 @@ body {
   gap: 0.5rem;
   background: rgba(139, 92, 246, 0.1);
   border: 1px solid rgba(139, 92, 246, 0.2);
-  color: #c4b5fd;
+  color: var(--accent);
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-xl);
   font-size: 0.9rem;
   font-weight: 500;
   backdrop-filter: var(--glass);
+}
+
+/* Theme Toggle Button */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  backdrop-filter: var(--glass);
+  margin-left: 0.5rem;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.theme-toggle-placeholder {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-left: 0.5rem;
 }
 
 .online-dot {

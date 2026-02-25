@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export default function HomePage() {
   const router = useRouter();
@@ -62,6 +63,7 @@ export default function HomePage() {
               🎉 {totalMatches.toLocaleString()} matches
             </div>
           )}
+          <ThemeToggle />
         </div>
       </header>
 

@@ -7,6 +7,7 @@ import { PeerConnection } from '@/lib/webrtc';
 import VideoGrid from '@/components/VideoGrid';
 import Controls from '@/components/Controls';
 import StatusBanner from '@/components/StatusBanner';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // Change this to wss://your-server if deployed (with TLS reverse proxy)
 const WS_URL = 'wss://mismatch-cx4b.onrender.com/ws';
@@ -205,6 +206,7 @@ export default function ChatPage() {
                             <span className="online-dot" /> {onlineCount.toLocaleString()}
                         </div>
                     )}
+                    <ThemeToggle />
                 </div>
             </div>
 
