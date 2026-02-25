@@ -9,7 +9,7 @@ import Controls from '@/components/Controls';
 import StatusBanner from '@/components/StatusBanner';
 
 // Change this to wss://your-server if deployed (with TLS reverse proxy)
-const WS_URL = 'ws://localhost:9443/ws';
+const WS_URL = 'wss://mismatch-cx4b.onrender.com/ws';
 
 type ChatStatus = 'idle' | 'waiting' | 'connected' | 'peer_left' | 'stopped';
 
