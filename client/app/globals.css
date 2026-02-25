@@ -70,17 +70,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
-  background: rgba(7, 7, 15, 0.75);
+  padding: 1rem 2rem;
+  background: var(--surface);
   backdrop-filter: var(--glass);
   -webkit-backdrop-filter: var(--glass);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border);
   transition: background 0.3s, border-color 0.3s;
-}
-
-[data-theme='light'] .landing-nav {
-  background: rgba(251, 251, 253, 0.85);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .hero-section {
@@ -695,10 +690,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: .9rem 1.5rem;
+  padding: 1rem 2rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   backdrop-filter: var(--glass);
+  -webkit-backdrop-filter: var(--glass);
   z-index: 10;
   flex-shrink: 0;
 }
