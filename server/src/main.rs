@@ -38,16 +38,15 @@ async fn main() {
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    // ── Plain TCP — localhost is a secure context in all modern browsers ──
-    // getUserMedia works on http://localhost without HTTPS.
-    // For production, put this behind Caddy/nginx with real TLS.
-    let addr = "0.0.0.0:9443";
+    // ── Plain TCP — Railway injects $PORT, default 9443 for local dev ────
+    let port = std::env::var("PORT").unwrap_or_else(|_| "9443".to_string());
+    let addr = format!("0.0.0.0:{port}");
     tracing::info!("MisMatch signaling server → http://{}", addr);
     tracing::info!("WebSocket endpoint         → ws://{}/ws", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr)
+    let listener = tokio::net::TcpListener::bind(&addr)
         .await
-        .expect("Failed to bind port 9443");
+        .expect("Failed to bind port");
 
     axum::serve(listener, app)
         .await
