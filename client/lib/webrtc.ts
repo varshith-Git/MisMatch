@@ -32,7 +32,13 @@ export class PeerConnection {
     public onConnectionStateChange: (state: RTCPeerConnectionState) => void = () => { };
 
     constructor() {
-        this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+        this.pc = new RTCPeerConnection({
+            iceServers: ICE_SERVERS,
+            // Multiplex all tracks on one transport — fewer ICE candidates needed
+            bundlePolicy: 'max-bundle',
+            // Pre-gather 10 candidates before offer is even sent — saves 50-200ms
+            iceCandidatePoolSize: 10,
+        });
 
         // Remote track received → assemble into a MediaStream
         this.pc.ontrack = (event) => {

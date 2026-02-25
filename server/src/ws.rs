@@ -27,7 +27,7 @@ pub async fn ws_handler(
 /// Full lifecycle for one connected peer.
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     let peer_id = Uuid::new_v4();
-    let (tx, mut rx) = mpsc::channel::<SignalMessage>(64);
+    let (tx, mut rx) = mpsc::channel::<SignalMessage>(256);
 
     // Split the WebSocket into sender and receiver halves
     let (mut ws_tx, mut ws_rx) = socket.split();

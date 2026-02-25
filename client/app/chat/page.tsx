@@ -93,8 +93,7 @@ export default function ChatPage() {
                         pcRef.current = pc;
 
                         if (msg.you_are_offerer) {
-                            // Small delay to ensure both sides have created their PeerConnection
-                            await new Promise((r) => setTimeout(r, 300));
+                            // Create offer immediately — no delay needed, PC is ready on construction
                             const sdp = await pc.createOffer();
                             sig.send({ type: 'Offer', sdp });
                         }
