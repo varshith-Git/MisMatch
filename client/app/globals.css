@@ -53,6 +53,28 @@ body {
   z-index: 0;
 }
 
+/* Animated glow backdrop (replaces canvas for SSR safety) */
+.home-bg-glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 40%, rgba(99, 102, 241, .18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(34, 211, 238, .12) 0%, transparent 60%);
+  animation: glow-drift 8s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+}
+
+@keyframes glow-drift {
+  from {
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    transform: scale(1.04) translateY(-12px);
+  }
+}
+
 .home-content {
   position: relative;
   z-index: 1;
@@ -156,6 +178,80 @@ body {
   font-size: .8rem;
   color: var(--text-muted);
   max-width: 26rem;
+}
+
+/* T&C checkbox */
+.tc-label {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  max-width: 28rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.tc-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: .15rem;
+  border: 2px solid var(--border);
+  border-radius: .3rem;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+}
+
+.tc-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.tc-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3.5 3.5L11 1' stroke='white' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/70% no-repeat;
+}
+
+.tc-text {
+  font-size: .875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.tc-link {
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Start button — button element (not anchor) */
+.start-btn {
+  display: inline-flex;
+  border: none;
+  padding: .2rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 999px;
+  box-shadow: 0 0 40px rgba(139, 92, 246, .5);
+  transition: transform .2s, box-shadow .2s, opacity .3s;
+  cursor: pointer;
+}
+
+.start-btn.disabled,
+.start-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.start-btn:not(.disabled):not(:disabled):hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 60px rgba(139, 92, 246, .7);
 }
 
 /* ── Chat Page ────────────────────────────────────────────────────────────── */
@@ -343,15 +439,45 @@ body {
 /* ── Controls ─────────────────────────────────────────────────────────────── */
 .controls {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
-  padding: 1.1rem 1.5rem;
+  gap: .5rem;
+  padding: .9rem 1.5rem;
   flex-shrink: 0;
   background: var(--surface);
   border-top: 1px solid var(--border);
   backdrop-filter: var(--glass);
 }
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Esc shortcut hint */
+.esc-hint {
+  font-size: .75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.esc-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .15rem .5rem;
+  border: 1px solid var(--border);
+  border-radius: .35rem;
+  background: var(--surface);
+  font-family: monospace;
+  font-size: .72rem;
+  color: var(--text-muted);
+  letter-spacing: .02em;
+}
+
 
 .ctrl-btn {
   display: flex;

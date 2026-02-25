@@ -153,6 +153,15 @@ export default function ChatPage() {
         sigRef.current?.send({ type: 'Skip' });
     }, []);
 
+    // ── Esc key → Next ────────────────────────────────────────────────────────
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') handleNext();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [handleNext]);
+
     const handleStop = useCallback(() => {
         setStatus('stopped');
         sigRef.current?.close();
