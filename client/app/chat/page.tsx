@@ -170,6 +170,13 @@ export default function ChatPage() {
         sigRef.current?.send({ type: 'Skip' });
     }, []);
 
+    const handleReport = useCallback(() => {
+        if (confirm("Are you sure you want to report this user and disconnect?")) {
+            sigRef.current?.send({ type: 'Report' });
+            handleNext();
+        }
+    }, [handleNext]);
+
     // ── Esc key → Next ────────────────────────────────────────────────────────
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
@@ -201,7 +208,12 @@ export default function ChatPage() {
                 </div>
             </div>
 
-            <VideoGrid localStream={localStream} remoteStream={remoteStream} status={status} />
+            <VideoGrid
+                localStream={localStream}
+                remoteStream={remoteStream}
+                status={status}
+                onReport={handleReport}
+            />
 
             <Controls
                 status={status}

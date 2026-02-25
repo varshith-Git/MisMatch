@@ -22,6 +22,9 @@ pub enum SignalMessage {
     /// Client is ready and waiting for a pair.
     Ready,
 
+    /// Client reports the current partner for abuse.
+    Report,
+
     // ── Relay (Client → Server → Client) ──────────────────────────────────
     // These are parsed only to identify their type; the raw bytes are
     // forwarded directly to avoid a double alloc (parse + re-serialize).

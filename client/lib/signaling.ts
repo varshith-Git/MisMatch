@@ -19,7 +19,8 @@ export type SignalMessage =
     | { type: 'PeerLeft' }
     // Client → Server
     | { type: 'Skip' }
-    | { type: 'Ready' };
+    | { type: 'Ready' }
+    | { type: 'Report' };
 
 // Only log in development — avoids JSON.stringify on large SDP objects in prod
 const DEBUG = process.env.NODE_ENV === 'development';

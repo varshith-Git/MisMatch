@@ -95,8 +95,27 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
         let msg_type = extract_type(&text);
 
         match msg_type {
-            // ── Skip / Ready — full parse needed ─────────────────────────
+            // ── Skip / Ready / Report — full parse needed ─────────────────
             Some("Skip") | Some("Ready") => {
+                handle_skip(&state, &handle).await;
+            }
+            Some("Report") => {
+                // In a production app, this would write to a DB or Discord webhook.
+                // Because we are Single-Node and memory-only, we write to the render logs.
+                if let Some(session) = state.sessions.get(&peer_id) {
+                    tracing::warn!(
+                        trigger = "ABUSE_REPORT",
+                        reporter = %peer_id,
+                        reported = %session.partner.id,
+                        "User {} reported partner {} for abuse.",
+                        peer_id,
+                        session.partner.id
+                    );
+                } else {
+                    tracing::warn!("User {} sent a report, but has no active session.", peer_id);
+                }
+                
+                // Automatically skip the user away from the abuser
                 handle_skip(&state, &handle).await;
             }
 
@@ -134,6 +153,7 @@ fn extract_type(text: &str) -> Option<&str> {
             "IceCandidate" => "IceCandidate",
             "Skip"         => "Skip",
             "Ready"        => "Ready",
+            "Report"       => "Report",
             _              => "Unknown",
         }
     })

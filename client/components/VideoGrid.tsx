@@ -8,9 +8,10 @@ interface VideoGridProps {
     localStream: MediaStream | null;
     remoteStream: MediaStream | null;
     status: Status;
+    onReport: () => void;
 }
 
-export default function VideoGrid({ localStream, remoteStream, status }: VideoGridProps) {
+export default function VideoGrid({ localStream, remoteStream, status, onReport }: VideoGridProps) {
     const localRef = useRef<HTMLVideoElement>(null);
     const remoteRef = useRef<HTMLVideoElement>(null);
 
@@ -61,6 +62,21 @@ export default function VideoGrid({ localStream, remoteStream, status }: VideoGr
                         )}
                     </div>
                 )}
+
+                {isConnected && (
+                    <button
+                        className="report-flag-btn"
+                        onClick={onReport}
+                        title="Report this user"
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                            <line x1="4" y1="22" x2="4" y2="15"></line>
+                        </svg>
+                        <span>Report</span>
+                    </button>
+                )}
+
                 <span className="video-label video-label-remote">Stranger</span>
             </div>
 
