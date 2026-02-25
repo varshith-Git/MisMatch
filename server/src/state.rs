@@ -1,3 +1,4 @@
+use std::sync::atomic::AtomicUsize;
 use std::{collections::VecDeque, sync::Arc};
 
 use dashmap::DashMap;
@@ -79,6 +80,7 @@ pub type Sessions = Arc<DashMap<Uuid, Session>>;
 pub struct AppState {
     pub waiting: SharedQueue,
     pub sessions: Sessions,
+    pub online_count: Arc<AtomicUsize>,
 }
 
 impl AppState {
@@ -86,6 +88,7 @@ impl AppState {
         Self {
             waiting: Arc::new(tokio::sync::Mutex::new(WaitingQueue::new())),
             sessions: Arc::new(DashMap::new()),
+            online_count: Arc::new(AtomicUsize::new(0)),
         }
     }
 

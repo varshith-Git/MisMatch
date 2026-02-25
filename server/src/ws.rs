@@ -1,3 +1,4 @@
+use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use axum::{
@@ -26,6 +27,7 @@ pub async fn ws_handler(
 
 /// Full lifecycle for one connected peer.
 async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
+    state.online_count.fetch_add(1, Ordering::SeqCst);
     let peer_id = Uuid::new_v4();
 
     // Channel carries OutboundMsg — relay msgs are Raw (no re-serialization)
@@ -112,6 +114,7 @@ async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
 
     // ── Cleanup on disconnect ─────────────────────────────────────────────
     tracing::info!("Peer disconnected: {}", peer_id);
+    state.online_count.fetch_sub(1, Ordering::SeqCst);
     cleanup(&state, &handle).await;
     send_task.abort();
 }

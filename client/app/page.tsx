@@ -1,11 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
+  const [onlineCount, setOnlineCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('https://mismatch-cx4b.onrender.com/api/stats');
+        if (res.ok) {
+          const data = await res.json();
+          setOnlineCount(data.online);
+        }
+      } catch (err) {
+        // Silently fail if stats endpoint is down
+      }
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 15000); // refresh every 15s
+    return () => clearInterval(interval);
+  }, []);
 
   const handleStart = () => {
     if (agreed) router.push('/chat');
@@ -27,6 +45,12 @@ export default function HomePage() {
           Meet someone new.<br />
           <span className="tagline-accent">Instantly. Anonymously. Anywhere.</span>
         </p>
+
+        {onlineCount !== null && (
+          <div className="online-badge">
+            <span className="online-dot" /> {onlineCount.toLocaleString()} online now
+          </div>
+        )}
 
         <div className="features">
           <div className="feature-pill">🎥 Video chat</div>

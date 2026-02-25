@@ -4,9 +4,10 @@ mod ws;
 
 use std::sync::Arc;
 
-use axum::{routing::get, Router};
+use axum::{routing::get, Router, extract::State, response::Json};
 use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
+use std::sync::atomic::Ordering;
 
 use state::AppState;
 use ws::ws_handler;
@@ -34,6 +35,11 @@ async fn main() {
     let app = Router::new()
         .route("/ws", get(ws_handler))
         .route("/health", get(|| async { "OK" }))
+        .route("/api/stats", get(|State(st): State<Arc<AppState>>| async move {
+            Json(serde_json::json!({
+                "online": st.online_count.load(Ordering::Relaxed)
+            }))
+        }))
         .layer(cors)
         .layer(TraceLayer::new_for_http())
         .with_state(state);
